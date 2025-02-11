@@ -5,7 +5,7 @@ import {
   map,
   mapOr,
   mapOrElse,
-  Option,
+  type Option,
   unwrap,
   unwrapOr,
   unwrapOrElse,
@@ -33,11 +33,14 @@ Deno.test("isSome returns false for undefined values", () => {
   assertEquals(isSome(value), false);
 });
 
-Deno.test("isSome returns true for null values (null is not part of Option type)", () => {
-  const value: Option<null> = null;
+Deno.test(
+  "isSome returns true for null values (null is not part of Option type)",
+  () => {
+    const value: Option<null> = null;
 
-  assertEquals(isSome(value), true);
-});
+    assertEquals(isSome(value), true);
+  },
+);
 
 Deno.test("isNone returns true for undefined values", () => {
   const value: Option<string> = undefined;
@@ -45,11 +48,14 @@ Deno.test("isNone returns true for undefined values", () => {
   assertEquals(isNone(value), true);
 });
 
-Deno.test("isNone returns false for null values (null is not part of Option type)", () => {
-  const value: Option<null> = null;
+Deno.test(
+  "isNone returns false for null values (null is not part of Option type)",
+  () => {
+    const value: Option<null> = null;
 
-  assertEquals(isNone(value), false);
-});
+    assertEquals(isNone(value), false);
+  },
+);
 
 Deno.test("isNone returns false for non-undefined values", () => {
   const value1: Option<number> = 42;
@@ -69,7 +75,10 @@ Deno.test("map transforms value when Some", () => {
 
 Deno.test("map returns undefined for None values", () => {
   const value: Option<number> = undefined;
-  assertEquals(map<number, number>(value, (x) => x * 2), undefined);
+  assertEquals(
+    map<number, number>(value, (x) => x * 2),
+    undefined,
+  );
 });
 
 Deno.test("mapOr transforms value when Some", () => {
@@ -80,7 +89,10 @@ Deno.test("mapOr transforms value when Some", () => {
 
 Deno.test("mapOr returns default for None values", () => {
   const value: Option<number> = undefined;
-  assertEquals(mapOr<number, number>(value, 0, (x) => x * 2), 0);
+  assertEquals(
+    mapOr<number, number>(value, 0, (x) => x * 2),
+    0,
+  );
 });
 
 Deno.test("mapOrElse transforms value when Some", () => {
@@ -91,7 +103,10 @@ Deno.test("mapOrElse transforms value when Some", () => {
 
 Deno.test("mapOrElse returns default for None values", () => {
   const value: Option<number> = undefined;
-  assertEquals(mapOrElse<number, number>(value, () => 0, 84), 84);
+  assertEquals(
+    mapOrElse<number, number>(value, () => 0, 84),
+    84,
+  );
 });
 
 Deno.test("unwrap returns value when Some", () => {
@@ -116,10 +131,16 @@ Deno.test("unwrapOr returns default for None values", () => {
 
 Deno.test("unwrapOrElse returns value when Some", () => {
   const value: Option<number> = 42;
-  assertEquals(unwrapOrElse(value, () => 0), 42);
+  assertEquals(
+    unwrapOrElse(value, () => 0),
+    42,
+  );
 });
 
 Deno.test("unwrapOrElse returns default for None values", () => {
   const value: Option<number> = undefined;
-  assertEquals(unwrapOrElse(value, () => 0), 0);
+  assertEquals(
+    unwrapOrElse(value, () => 0),
+    0,
+  );
 });

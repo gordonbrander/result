@@ -9,7 +9,7 @@ import {
   mapOrElse,
   ok,
   perform,
-  Result,
+  type Result,
   toOption,
   unwrap,
   unwrapOr,
@@ -74,12 +74,18 @@ Deno.test("unwrapOr returns default for err results", () => {
 
 Deno.test("unwrapOrElse returns value for ok results", () => {
   const result: Result<number, string> = { ok: true, value: 42 };
-  assertEquals(unwrapOrElse(result, () => 0), 42);
+  assertEquals(
+    unwrapOrElse(result, () => 0),
+    42,
+  );
 });
 
 Deno.test("unwrapOrElse returns computed default for err results", () => {
   const result: Result<number, string> = { ok: false, error: "error" };
-  assertEquals(unwrapOrElse(result, () => 0), 0);
+  assertEquals(
+    unwrapOrElse(result, () => 0),
+    0,
+  );
 });
 
 Deno.test("map transforms ok values", () => {
@@ -108,7 +114,11 @@ Deno.test("mapOr returns default for err values", () => {
 
 Deno.test("mapOrElse transforms ok values", () => {
   const result: Result<number, string> = { ok: true, value: 42 };
-  const mapped = mapOrElse(result, (x) => x * 2, () => 0);
+  const mapped = mapOrElse(
+    result,
+    (x) => x * 2,
+    () => 0,
+  );
   assertEquals(mapped, 84);
 });
 
