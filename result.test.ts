@@ -1,6 +1,7 @@
 import { assertEquals } from "@std/assert";
 import {
   err,
+  flatMap,
   isErr,
   isOk,
   map,
@@ -9,13 +10,12 @@ import {
   mapOrElse,
   ok,
   perform,
+  pipe,
   type Result,
   toOption,
   unwrap,
   unwrapOr,
   unwrapOrElse,
-  flatMap,
-  pipe,
 } from "./result.ts";
 
 Deno.test("ok creates an ok result", () => {
@@ -177,8 +177,9 @@ Deno.test("flatMap transforms ok values with resulting ok", () => {
 
 Deno.test("flatMap transforms ok values with resulting err", () => {
   const result: Result<number, string> = { ok: true, value: 42 };
-  const flatMapped = flatMap<number, number, string>(result, () =>
-    err("error"),
+  const flatMapped = flatMap<number, number, string>(
+    result,
+    () => err("error"),
   );
   assertEquals(flatMapped, { ok: false, error: "error" });
 });
