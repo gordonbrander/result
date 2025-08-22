@@ -190,7 +190,7 @@ export const toOption = <T, E>(result: Result<T, E>): Option<T> =>
  * @param fn - The function to perform
  * @returns A Result containing either the value or the error that was thrown
  */
-export const perform = <T, E>(fn: () => T): Result<T, E> => {
+export const perform = <T, E = unknown>(fn: () => T): Result<T, E> => {
   try {
     return ok(fn());
   } catch (error) {
@@ -203,8 +203,8 @@ export const perform = <T, E>(fn: () => T): Result<T, E> => {
  * @param fn - The function to perform
  * @returns A Result containing either the value or the error that was thrown
  */
-export const performAsync = async <T, E>(
-  fn: () => T,
+export const performAsync = async <T, E = unknown>(
+  fn: () => Promise<T>,
 ): Promise<Result<T, E>> => {
   try {
     return ok(await fn());
