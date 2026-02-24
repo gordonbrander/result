@@ -176,10 +176,10 @@ const result = Result.intoResult(data, error);
 ### Bridging with Zod
 
 ```ts
-import { toResult } from "@gordonb/result/zod";
+import { toResult } from "@gordonb/result/result/zod";
 ```
 
-Converts a Zod `safeParse` result into a `Result<T, ZodError>`.
+Converts a [Zod `safeParse`](https://zod.dev/basics#handling-errors) result into a `Result<T, ZodError>`.
 
 ```ts
 import { z } from "zod";

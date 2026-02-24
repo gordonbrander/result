@@ -15,6 +15,6 @@
     "./option": "./option.ts",
     "./result/combinators": "./result/combinators.ts",
     "./option/combinators": "./option/combinators.ts",
-    "./zod": "./zod.ts"
+    "./result/zod": "./result/zod.ts"
   }
 }

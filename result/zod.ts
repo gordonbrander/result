@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "./result.ts";
+import { err, ok, type Result } from "../result.ts";
 
 export type SafeParseSuccess<T> = {
   success: true;

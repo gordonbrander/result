@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { z } from "zod";
-import { isErr, isOk, type Result } from "./result.ts";
+import { isErr, isOk, type Result } from "../result.ts";
 import { toResult } from "./zod.ts";
 
 /** Compile-time type assertion. Asserts that T is assignable to Expected. */
