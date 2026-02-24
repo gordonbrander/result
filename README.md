@@ -173,6 +173,28 @@ const { data, error } = await supabase.from("users").select();
 const result = Result.intoResult(data, error);
 ```
 
+### Bridging with Zod
+
+```ts
+import { toResult } from "@gordonb/result/result/zod";
+```
+
+Converts a [Zod `safeParse`](https://zod.dev/basics#handling-errors) result into
+a `Result<T, ZodError>`.
+
+```ts
+import { z } from "zod";
+
+const User = z.object({ name: z.string(), age: z.number() });
+
+const result = toResult(User.safeParse(input));
+// Ok with parsed User, or Err with ZodError
+```
+
+The `zod` module re-declares Zod's `SafeParseReturnType` locally, so it has no
+runtime dependency on Zod. Any object matching the `{ success, data, error }`
+shape will work.
+
 ## Option
 
 Option is modeled as `T | undefined`, with helpers for coalescing nullish values
