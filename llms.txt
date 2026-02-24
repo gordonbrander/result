@@ -1,0 +1,191 @@
+---
+name: gordonb-result
+description: How to use the @gordonb/result package.
+---
+# @gordonb/result
+
+> Rust-like Result and Option types for TypeScript. Plain data, pure functions, no wrapper classes.
+
+## Install
+
+```sh
+deno add jsr:@gordonb/result
+```
+
+## Import paths
+
+- `@gordonb/result` — namespace imports (`Result`, `Option`)
+- `@gordonb/result/result` — Result utilities
+- `@gordonb/result/option` — Option utilities
+- `@gordonb/result/result/combinators` — data-last Result combinators for piping
+- `@gordonb/result/option/combinators` — data-last Option combinators for piping
+- `@gordonb/result/result/zod` — Zod safeParse bridge
+- `@gordonb/result/pipe` — pipe, flow, pipeAsync, flowAsync (re-exported from @gordonb/pipe)
+
+## Result
+
+A `Result<T, E>` is a discriminated union: `Ok<T> | Err<E>`.
+
+```ts
+type Ok<T> = { ok: true; value: T }
+type Err<E> = { ok: false; error: E }
+type Result<T, E> = Ok<T> | Err<E>
+```
+
+### Creating Results
+
+```ts
+import * as Result from "@gordonb/result/result"
+
+Result.ok(42)            // { ok: true, value: 42 }
+Result.err("not found")  // { ok: false, error: "not found" }
+```
+
+### Type guards
+
+```ts
+Result.isOk(result)   // result is Ok<T>
+Result.isErr(result)   // result is Err<E>
+```
+
+### Unwrapping
+
+```ts
+Result.unwrap(result)                      // returns T or throws TypeError (with error as cause)
+Result.unwrapOr(result, defaultValue)      // returns T or defaultValue
+Result.unwrapOrElse(result, (error) => fallback)  // returns T or computes fallback from error
+```
+
+### Transformations
+
+```ts
+Result.map(result, (value) => newValue)       // Ok mapped, Err passes through
+Result.mapOr(result, (value) => newValue, defaultValue)  // mapped value or default
+Result.mapOrElse(result, (value) => newValue, (error) => fallback)  // mapped or computed fallback
+Result.flatMap(result, (value) => Result.ok(newValue))  // chains Result-returning functions
+Result.mapErr(result, (error) => newError)    // Err mapped, Ok passes through
+```
+
+### Capturing thrown errors
+
+```ts
+const parsed = Result.perform(() => JSON.parse(input))         // Result<any, unknown>
+const data = await Result.performAsync(() => fetch(url))       // Promise<Result<Response, unknown>>
+```
+
+### Conversion
+
+```ts
+Result.toOption(result)   // Ok<T> -> T, Err -> undefined
+```
+
+### Bridging nullable value/error pairs
+
+```ts
+Result.intoResult(value, error)   // Result<Option<T>, E>
+// For libraries that return separate value/error (e.g. Supabase)
+```
+
+## Option
+
+An `Option<T>` is `T | undefined`. Null is not used; use `from` to coalesce null.
+
+```ts
+type Option<T> = T | undefined
+type Nullish<T> = T | null | undefined
+```
+
+### Creating Options
+
+```ts
+import * as Option from "@gordonb/result/option"
+
+Option.from(value)   // coalesces null to undefined
+```
+
+### Type guards
+
+```ts
+Option.isSome(value)    // value is T
+Option.isNone(value)    // value is undefined
+Option.isNullish(value) // value is null | undefined
+```
+
+### Unwrapping
+
+```ts
+Option.unwrap(value)                   // returns T or throws TypeError
+Option.unwrapOr(value, defaultValue)   // returns T or defaultValue
+Option.unwrapOrElse(value, () => fallback)  // returns T or computes fallback
+```
+
+### Transformations
+
+```ts
+Option.map(value, (v) => newValue)              // Some mapped, None passes through
+Option.mapOr(value, defaultValue, (v) => newValue)   // mapped or default
+Option.mapOrElse(value, () => fallback, defaultValue) // mapped or fallback
+```
+
+## Combinators (data-last, for piping)
+
+Curried, data-last versions of Result and Option operations. Designed for use with `pipe` and `flow`.
+
+### Result combinators
+
+```ts
+import * as Result from "@gordonb/result/result"
+import { map, flatMap, unwrapOr } from "@gordonb/result/result/combinators"
+import { pipe } from "@gordonb/result/pipe"
+
+const result = pipe(
+  Result.ok(10),
+  map((x) => x + 5),
+  flatMap((x) => x > 10 ? Result.ok(x * 2) : Result.err("too small")),
+  unwrapOr(0),
+)
+// 30
+```
+
+Available: `map`, `mapOr`, `mapOrElse`, `flatMap`, `mapErr`, `unwrapOr`, `unwrapOrElse`
+
+### Option combinators
+
+```ts
+import * as OC from "@gordonb/result/option/combinators"
+import { pipe } from "@gordonb/result/pipe"
+
+const display = pipe(
+  items[0],
+  OC.map((s) => s.toUpperCase()),
+  OC.unwrapOr("(empty)"),
+)
+```
+
+Available: `OC.map`, `OC.mapOr`, `OC.mapOrElse`, `OC.unwrapOr`, `OC.unwrapOrElse`
+
+## Pipe and Flow
+
+Re-exported from `@gordonb/pipe`.
+
+```ts
+import { pipe, flow, pipeAsync, flowAsync } from "@gordonb/result/pipe"
+
+pipe(value, fn1, fn2, fn3)           // fn3(fn2(fn1(value)))
+const transform = flow(fn1, fn2)     // (value) => fn2(fn1(value))
+await pipeAsync(value, asyncFn1, asyncFn2)
+const asyncTransform = flowAsync(asyncFn1, asyncFn2)
+```
+
+## Zod integration
+
+Converts Zod's `safeParse` result into a `Result`. No runtime dependency on Zod.
+
+```ts
+import { z } from "zod"
+import { toResult as zodToResult } from "@gordonb/result/result/zod"
+
+const User = z.object({ name: z.string(), age: z.number() })
+const result = zodToResult(User.safeParse(input))
+// Ok<{ name: string; age: number }> or Err<ZodError>
+```
