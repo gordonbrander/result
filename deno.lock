@@ -3,8 +3,7 @@
   "specifiers": {
     "jsr:@gordonb/pipe@0.1": "0.1.0",
     "jsr:@std/assert@1": "1.0.11",
-    "jsr:@std/internal@^1.0.5": "1.0.5",
-    "npm:zod@^4.3.6": "4.3.6"
+    "jsr:@std/internal@^1.0.5": "1.0.5"
   },
   "jsr": {
     "@gordonb/pipe@0.1.0": {
@@ -20,16 +19,10 @@
       "integrity": "54a546004f769c1ac9e025abd15a76b6671ddc9687e2313b67376125650dc7ba"
     }
   },
-  "npm": {
-    "zod@4.3.6": {
-      "integrity": "sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg=="
-    }
-  },
   "workspace": {
     "dependencies": [
       "jsr:@gordonb/pipe@0.1",
-      "jsr:@std/assert@1",
-      "npm:zod@^4.3.6"
+      "jsr:@std/assert@1"
     ]
   }
 }

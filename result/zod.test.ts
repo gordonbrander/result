@@ -1,21 +1,29 @@
 import { assertEquals } from "@std/assert";
-import { z } from "zod";
 import { isErr, isOk, type Result } from "../result.ts";
-import { toResult } from "./zod.ts";
+import {
+  type SafeParseError,
+  type SafeParseReturnType,
+  type SafeParseSuccess,
+  toResult,
+} from "./zod.ts";
 
 /** Compile-time type assertion. Asserts that T is assignable to Expected. */
 type AssertAssignable<T, Expected> = T extends Expected ? true : never;
 
-const UserSchema = z.object({
-  name: z.string(),
-  age: z.number(),
-});
+type User = { name: string; age: number };
 
-type User = z.infer<typeof UserSchema>;
+const success: SafeParseSuccess<User> = {
+  success: true,
+  data: { name: "Alice", age: 30 },
+};
 
-Deno.test("toResult converts successful safeParse to Ok", () => {
-  const parsed = UserSchema.safeParse({ name: "Alice", age: 30 });
-  const result = toResult(parsed);
+const failure: SafeParseError<string> = {
+  success: false,
+  error: "invalid input",
+};
+
+Deno.test("toResult converts successful parse to Ok", () => {
+  const result = toResult(success);
 
   assertEquals(isOk(result), true);
   if (isOk(result)) {
@@ -23,89 +31,97 @@ Deno.test("toResult converts successful safeParse to Ok", () => {
   }
 });
 
-Deno.test("toResult converts failed safeParse to Err", () => {
-  const parsed = UserSchema.safeParse({ name: 123, age: "not a number" });
-  const result = toResult(parsed);
+Deno.test("toResult converts failed parse to Err", () => {
+  const result = toResult(failure);
 
   assertEquals(isErr(result), true);
   if (isErr(result)) {
-    assertEquals(result.error instanceof z.ZodError, true);
+    assertEquals(result.error, "invalid input");
   }
 });
 
 Deno.test("toResult Ok value has correct type", () => {
-  const parsed = UserSchema.safeParse({ name: "Alice", age: 30 });
-  const result = toResult(parsed);
+  const result = toResult(success);
 
-  // Compile-time: result value should be assignable to User
   if (isOk(result)) {
     const _check: AssertAssignable<typeof result.value, User> = true;
     const _user: User = result.value;
     assertEquals(_user.name, "Alice");
     assertEquals(_user.age, 30);
+    void _check;
   }
 });
 
 Deno.test("toResult Err value has correct type", () => {
-  const parsed = UserSchema.safeParse({});
-  const result = toResult(parsed);
+  const result = toResult(failure);
 
-  // Compile-time: result error should be assignable to ZodError
   if (isErr(result)) {
-    const _check: AssertAssignable<typeof result.error, z.ZodError> = true;
-    const _error: z.ZodError = result.error;
-    assertEquals(_error.issues.length > 0, true);
+    const _check: AssertAssignable<typeof result.error, string> = true;
+    const _error: string = result.error;
+    assertEquals(_error, "invalid input");
+    void _check;
   }
 });
 
-Deno.test("toResult return type is Result<User, ZodError>", () => {
-  const parsed = UserSchema.safeParse({ name: "Bob", age: 25 });
-  const result = toResult(parsed);
+Deno.test("toResult return type is Result<User, string>", () => {
+  const input: SafeParseReturnType<User, string> = success;
+  const result = toResult(input);
 
-  // Compile-time: result should be assignable to Result<User, ZodError>
   const _check: AssertAssignable<
     typeof result,
-    Result<User, z.ZodError>
+    Result<User, string>
   > = true;
   void _check;
 });
 
-Deno.test("toResult preserves all fields on successful parse", () => {
-  const schema = z.object({
-    id: z.number(),
-    tags: z.array(z.string()),
-    active: z.boolean(),
-  });
+Deno.test("toResult preserves all fields on success", () => {
+  type Record = { id: number; tags: string[]; active: boolean };
+  const input: SafeParseSuccess<Record> = {
+    success: true,
+    data: { id: 1, tags: ["a", "b"], active: true },
+  };
 
-  const input = { id: 1, tags: ["a", "b"], active: true };
-  const result = toResult(schema.safeParse(input));
+  const result = toResult(input);
 
   assertEquals(isOk(result), true);
   if (isOk(result)) {
-    assertEquals(result.value, input);
+    assertEquals(result.value, { id: 1, tags: ["a", "b"], active: true });
   }
 });
 
-Deno.test("toResult error contains issue details for invalid input", () => {
-  const result = toResult(UserSchema.safeParse({}));
-
-  assertEquals(isErr(result), true);
-  if (isErr(result)) {
-    const paths = result.error.issues.map((i) => i.path[0]);
-    assertEquals(paths.includes("name"), true);
-    assertEquals(paths.includes("age"), true);
-  }
-});
-
-Deno.test("toResult works with primitive schemas", () => {
-  const schema = z.string();
-
-  const okResult = toResult(schema.safeParse("hello"));
+Deno.test("toResult works with primitive data types", () => {
+  const okResult = toResult({ success: true, data: "hello" } as const);
   assertEquals(isOk(okResult), true);
   if (isOk(okResult)) {
     assertEquals(okResult.value, "hello");
   }
 
-  const errResult = toResult(schema.safeParse(42));
+  const errResult = toResult({
+    success: false,
+    error: 42,
+  } as SafeParseError<number>);
   assertEquals(isErr(errResult), true);
+  if (isErr(errResult)) {
+    assertEquals(errResult.error, 42);
+  }
+});
+
+Deno.test("toResult works with structured error types", () => {
+  type ValidationError = { field: string; message: string };
+  const input: SafeParseError<ValidationError[]> = {
+    success: false,
+    error: [
+      { field: "name", message: "required" },
+      { field: "age", message: "must be a number" },
+    ],
+  };
+
+  const result = toResult(input);
+
+  assertEquals(isErr(result), true);
+  if (isErr(result)) {
+    assertEquals(result.error.length, 2);
+    assertEquals(result.error[0].field, "name");
+    assertEquals(result.error[1].field, "age");
+  }
 });

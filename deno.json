@@ -5,8 +5,7 @@
   "tasks": {},
   "imports": {
     "@gordonb/pipe": "jsr:@gordonb/pipe@^0.1.0",
-    "@std/assert": "jsr:@std/assert@1",
-    "zod": "npm:zod@^4.3.6"
+    "@std/assert": "jsr:@std/assert@1"
   },
   "exports": {
     ".": "./main.ts",
