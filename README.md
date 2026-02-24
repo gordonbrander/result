@@ -191,8 +191,8 @@ const result = toResult(User.safeParse(input));
 ```
 
 The `zod` module re-declares Zod's `SafeParseReturnType` locally, so it has no
-runtime dependency on Zod. Any object matching the
-`{ success, data, error }` shape will work.
+runtime dependency on Zod. Any object matching the `{ success, data, error }`
+shape will work.
 
 ## Option
 
