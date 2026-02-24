@@ -12,6 +12,7 @@
     "./pipe": "./pipe.ts",
     "./result": "./result.ts",
     "./option": "./option.ts",
-    "./result/combinators": "./result/combinators.ts"
+    "./result/combinators": "./result/combinators.ts",
+    "./option/combinators": "./option/combinators.ts"
   }
 }
