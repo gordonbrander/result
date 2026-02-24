@@ -4,11 +4,14 @@
   "license": "MIT",
   "tasks": {},
   "imports": {
+    "@gordonb/pipe": "jsr:@gordonb/pipe@^0.1.0",
     "@std/assert": "jsr:@std/assert@1"
   },
   "exports": {
     ".": "./main.ts",
+    "./pipe": "./pipe.ts",
     "./result": "./result.ts",
-    "./option": "./option.ts"
+    "./option": "./option.ts",
+    "./result/combinators": "./result/combinators.ts"
   }
 }

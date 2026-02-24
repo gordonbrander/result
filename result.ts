@@ -2,7 +2,7 @@
  * @file Tools for working with Result type
  */
 
-import type { Option } from "./option.ts";
+import type { Nullish, Option } from "./option.ts";
 
 /** A successful result */
 export type Ok<T> = { ok: true; value: T };
@@ -98,89 +98,6 @@ export const mapErr = <T, E, U>(
   fn: (error: E) => U,
 ): Result<T, U> => (isErr(result) ? err(fn(result.error)) : ok(result.value));
 
-/**
- * Pipe a result through a series of functions that produce a result.
- * Each function returns a new result, and must share the same error type.
- * Shortcuts at first error.
- */
-export function pipe<T0, E>(value: Result<T0, E>): Result<T0, E>;
-export function pipe<T0, T1, E>(
-  value: Result<T0, E>,
-  fn1: (value: T0) => Result<T1, E>,
-): Result<T1, E>;
-export function pipe<T0, T1, T2, E>(
-  value: Result<T0, E>,
-  fn1: (value: T0) => Result<T1, E>,
-  fn2: (value: T1) => Result<T2, E>,
-): Result<T2, E>;
-export function pipe<T0, T1, T2, T3, E>(
-  value: Result<T0, E>,
-  fn1: (value: T0) => Result<T1, E>,
-  fn2: (value: T1) => Result<T2, E>,
-  fn3: (value: T2) => Result<T3, E>,
-): Result<T3, E>;
-export function pipe<T0, T1, T2, T3, T4, E>(
-  value: Result<T0, E>,
-  fn1: (value: T0) => Result<T1, E>,
-  fn2: (value: T1) => Result<T2, E>,
-  fn3: (value: T2) => Result<T3, E>,
-  fn4: (value: T3) => Result<T4, E>,
-): Result<T4, E>;
-export function pipe<T0, T1, T2, T3, T4, T5, E>(
-  value: Result<T0, E>,
-  fn1: (value: T0) => Result<T1, E>,
-  fn2: (value: T1) => Result<T2, E>,
-  fn3: (value: T2) => Result<T3, E>,
-  fn4: (value: T3) => Result<T4, E>,
-  fn5: (value: T4) => Result<T5, E>,
-): Result<T5, E>;
-export function pipe<T0, T1, T2, T3, T4, T5, T6, E>(
-  value: Result<T0, E>,
-  fn1: (value: T0) => Result<T1, E>,
-  fn2: (value: T1) => Result<T2, E>,
-  fn3: (value: T2) => Result<T3, E>,
-  fn4: (value: T3) => Result<T4, E>,
-  fn5: (value: T4) => Result<T5, E>,
-  fn6: (value: T5) => Result<T6, E>,
-): Result<T6, E>;
-export function pipe<T0, T1, T2, T3, T4, T5, T6, T7, E>(
-  value: Result<T0, E>,
-  fn1: (value: T0) => Result<T1, E>,
-  fn2: (value: T1) => Result<T2, E>,
-  fn3: (value: T2) => Result<T3, E>,
-  fn4: (value: T3) => Result<T4, E>,
-  fn5: (value: T4) => Result<T5, E>,
-  fn6: (value: T5) => Result<T6, E>,
-  fn7: (value: T6) => Result<T7, E>,
-): Result<T7, E>;
-export function pipe<T0, T1, T2, T3, T4, T5, T6, T7, T8, E>(
-  value: Result<T0, E>,
-  fn1: (value: T0) => Result<T1, E>,
-  fn2: (value: T1) => Result<T2, E>,
-  fn3: (value: T2) => Result<T3, E>,
-  fn4: (value: T3) => Result<T4, E>,
-  fn5: (value: T4) => Result<T5, E>,
-  fn6: (value: T5) => Result<T6, E>,
-  fn7: (value: T6) => Result<T7, E>,
-  fn8: (value: T7) => Result<T8, E>,
-): Result<T8, E>;
-export function pipe(
-  value: Result<unknown, unknown>,
-  ...fns: Array<(value: unknown) => Result<unknown, unknown>>
-): Result<unknown, unknown>;
-export function pipe(
-  value: Result<unknown, unknown>,
-  ...fns: Array<(value: unknown) => Result<unknown, unknown>>
-): Result<unknown, unknown> {
-  let res = value;
-  if (!res.ok) return res;
-  for (const fn of fns) {
-    res = fn(res.value);
-    if (!res.ok) return res;
-  }
-  return res;
-}
-
 /** Convert Result to Option. Ok gets unwrapped, and Err becomes undefined. */
 export const toOption = <T, E>(result: Result<T, E>): Option<T> =>
   isOk(result) ? result.value : undefined;
@@ -211,4 +128,21 @@ export const performAsync = async <T, E = unknown>(
   } catch (error) {
     return err(error as E);
   }
+};
+
+/**
+ * Transform two disjoint nullish values (a possible value and a possible error)
+ * into a Result of optional value or error.
+ *
+ * This function is useful for bridging to libraries that don't have proper result
+ * types with a discriminated union.
+ */
+export const intoResult = <T, E>(
+  value: Nullish<T>,
+  error: Nullish<E>,
+): Result<Option<T>, E> => {
+  if (error != undefined) {
+    return err(error);
+  }
+  return ok(value ?? undefined);
 };

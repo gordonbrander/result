@@ -10,7 +10,6 @@ import {
   mapOrElse,
   ok,
   perform,
-  pipe,
   type Result,
   toOption,
   unwrap,
@@ -188,36 +187,4 @@ Deno.test("flatMap preserves err values", () => {
   const result: Result<number, string> = { ok: false, error: "error" };
   const flatMapped = flatMap<number, number, string>(result, (x) => ok(x * 2));
   assertEquals(flatMapped, { ok: false, error: "error" });
-});
-
-Deno.test("pipe processes a series of successful transformations", () => {
-  const initialResult: Result<number, string> = ok(2);
-  const pipedResult = pipe(
-    initialResult,
-    (x) => ok(x + 3), // 2 + 3 = 5
-    (x) => ok(x * 2), // 5 * 2 = 10
-    (x) => ok(x - 4), // 10 - 4 = 6
-  );
-  assertEquals(pipedResult, { ok: true, value: 6 });
-});
-
-Deno.test("pipe halts on first error and returns it", () => {
-  const initialResult: Result<number, string> = ok(2);
-  const pipedResult = pipe(
-    initialResult,
-    (x) => ok(x + 3), // 2 + 3 = 5
-    () => err("interrupted"), // Stops here
-    (x) => ok(x + 1), // Not reached
-  );
-  assertEquals(pipedResult, { ok: false, error: "interrupted" });
-});
-
-Deno.test("pipe processes starts with an error and maintains it", () => {
-  const initialResult: Result<number, string> = err("initial error");
-  const pipedResult = pipe(
-    initialResult,
-    (x) => ok(x + 3), // Not reached
-    (x) => ok(x + 1), // Not reached
-  );
-  assertEquals(pipedResult, { ok: false, error: "initial error" });
 });
